@@ -4,7 +4,7 @@ $(document).ready(function() {
 	var grid = {
     a1: {
         data: "a1",
-        color: "#f90"
+        color: "#000"
     },
     a2: {
         data: "a2",
@@ -28,15 +28,15 @@ $(document).ready(function() {
     },
     b2: {
         data: "b2",
-        color: "#000"
+        color: "#f90"
     },
     b3: {
         data: "b3",
-        color: "#000"
+        color: "#f90"
     },
     b4: {
         data: "b4",
-        color: "#000"
+        color: "#f90"
     },
     b5: {
         data: "b5",
@@ -52,7 +52,7 @@ $(document).ready(function() {
     },
     c3: {
         data: "c3",
-        color: "#000"
+        color: "#f90"
     },
     c4: {
         data: "c4",
@@ -72,7 +72,7 @@ $(document).ready(function() {
     },
     d3: {
         data: "d3",
-        color: "#000"
+        color: "#f90"
     },
     d4: {
         data: "d4",
@@ -88,11 +88,11 @@ $(document).ready(function() {
     },
     e2: {
         data: "e2",
-        color: "#000"
+        color: "#f90"
     },
     e3: {
         data: "e3",
-        color: "#000"
+        color: "#f90"
     },
     e4: {
         data: "e4",
@@ -107,13 +107,13 @@ $(document).ready(function() {
 	
 
     canvas = document.getElementById('canvas');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight-300;
     ctx = canvas.getContext('2d');
+    
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
     numCols = 5;
     z = 0;
-    maxZoom = canvas.width/numCols;
-    minZoom = canvas.height/numCols;
     x = (canvas.width/2)-(canvas.height/2);
     y = 0;
     
@@ -138,7 +138,6 @@ $(document).ready(function() {
     });
 
     $("canvas").on('mousedown', function(event) {
-        
         var lastX = event.clientX;
         var lastY = event.clientY; 
         
@@ -182,7 +181,7 @@ $(document).ready(function() {
     	
     	var cells = Object.keys(grid);
     	var counter = 0;
-    	
+    	var offScreen = [];
     	$(cells).each(function() {
     		
     		if((counter % numCols === 0)&&(counter != 0)) {
@@ -197,26 +196,31 @@ $(document).ready(function() {
     		var color = cell.color;
             var text = cell.data;
 
-    		ctx.fillStyle = "rgb("+r+", "+g+", "+b+")";
-        	ctx.fillRect (x-(w/5), y-(h/5), w, h);
+    		
+            if((x>(0-w))&&(x<(canvas.width+w))&&(y>(0-h))&&(y<(canvas.height+h))) {
+                ctx.fillStyle = color;
+                ctx.fillRect (x, y, w, h);
 
-            ctx.fillStyle="#fff";
-            ctx.font="15px Georgia";
-            ctx.fillText(text, x, y);
+                ctx.fillStyle="#fff";
+                ctx.font="15px Georgia";
+                ctx.fillText(text, x+(w/5), y+(h/5));
+            } else {
+                offScreen.push(text);
+            }
 
-			color = "#0" + (color += 5);
-			x += w;	
+            x += w;	
 			r += 3;
 			g += 4;
 			b += 5;
     	
-    	}); 	
+    	});
+        console.log(offScreen); 	
     }
 
     function reDrawCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight-300;
-            drawStuff(x, y, z); 
+        canvas.width = $(window).width();
+        canvas.height = $(window).height()-300;
+        drawStuff(x, y, z); 
     }
 
     drawStuff(x, y, z); 
