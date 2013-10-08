@@ -4,7 +4,7 @@ $(document).ready(function() {
 	var grid = {
     a1: {
         data: "a1",
-        color: "#000"
+        color: "#f90"
     },
     a2: {
         data: "a2",
@@ -106,32 +106,80 @@ $(document).ready(function() {
 
 	
 
-    var canvas = document.getElementById('canvas'),
+    canvas = document.getElementById('canvas');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight-300;
     ctx = canvas.getContext('2d');
+    numCols = 5;
+    z = 0;
+    maxZoom = canvas.width/numCols;
+    minZoom = canvas.height/numCols;
+    x = (canvas.width/2)-(canvas.height/2);
+    y = 0;
+    
 
-    // resize the canvas to fill browser window dynamically
-    window.addEventListener('resize', resizeCanvas, false);
+    //event listeners
+    $(window).on('resize', reDrawCanvas);
 
-    function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight-300;
-	        drawStuff(); 
-    }
-    resizeCanvas();
+    $("canvas").on('mousewheel', function(event) {
+        var delta = event.originalEvent.wheelDelta;
 
-    function drawStuff() {
-    	
-    	var numCols = 5;
-    	
-    	var	w = window.innerWidth/numCols;
+        if(delta > 0) {
+            z += .5;
+            if(z>3.5)
+                z=3.5;
+        } else {
+            z -= .1; 
+            if(z<-3.5)
+                z=-3.5;
+        }
+
+        drawStuff(x, y, z);
+    });
+
+    $("canvas").on('mousedown', function(event) {
+        
+        var lastX = event.clientX;
+        var lastY = event.clientY; 
+        
+        $(window).on('mousemove', function(e) {
+            var newX = e.clientX;
+            var newY = e.clientY;
+
+            if(lastX > newX) {
+                x -= Math.abs(lastX - newX); 
+            } else {
+                x += Math.abs(lastX - newX);
+            }
+            if(newY > lastY) {
+                y += Math.abs(lastY - newY);
+            } else {
+                y -= Math.abs(lastY - newY); 
+            }
+
+
+            lastX = newX;
+            lastY = newY;
+
+            drawStuff(x, y, z);
+
+        });
+    })
+
+    $(window).on('mouseup', function() {
+        $(window).off('mousemove');
+    });
+
+
+    //main draw function
+    function drawStuff(x, y, z) {
+    	canvas.width = canvas.width;
+    	var	w = canvas.height/(numCols-z);
     	var	h = w;
-    	var	x = 0;
-    	var	y = 0;
     	var r = 100;
     	var g = 100;
     	var b = 100;
     	
-
     	var cells = Object.keys(grid);
     	var counter = 0;
     	
@@ -139,19 +187,22 @@ $(document).ready(function() {
     		
     		if((counter % numCols === 0)&&(counter != 0)) {
     			counter = 0;
-    			x = 0;
+    			x = (x-w*numCols);
     			y += h;
     		}
 
 			counter++;
 			
 			var cell = grid[this];
-    		var color = "rgb("+r+", "+g+", "+b+")";
+    		var color = cell.color;
+            var text = cell.data;
 
+    		ctx.fillStyle = "rgb("+r+", "+g+", "+b+")";
+        	ctx.fillRect (x-(w/5), y-(h/5), w, h);
 
-
-    		ctx.fillStyle = color;
-        	ctx.fillRect (x, y, w, h);
+            ctx.fillStyle="#fff";
+            ctx.font="15px Georgia";
+            ctx.fillText(text, x, y);
 
 			color = "#0" + (color += 5);
 			x += w;	
@@ -159,8 +210,20 @@ $(document).ready(function() {
 			g += 4;
 			b += 5;
     	
-    	});
+    	}); 	
+    }
 
-    	
-   }
+    function reDrawCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight-300;
+            drawStuff(x, y, z); 
+    }
+
+    drawStuff(x, y, z); 
+
 });
+
+
+//onld functions
+    
+    
