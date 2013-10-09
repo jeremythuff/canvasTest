@@ -123,45 +123,64 @@ $(document).ready(function() {
 
     $("canvas").on('mousewheel', function(event) {
         var delta = event.originalEvent.wheelDelta;
+        var oldZ = z;
 
         if(delta > 0) {
             z += .5;
             if(z>3.5)
-                z=3.5;
+                z=oldZ;
         } else {
-            z -= .1; 
-            if(z<-3.5)
-                z=-3.5;
+            z -= .5; 
+            if((canvas.height/(numCols-oldZ)*(numCols*3)===canvas.height)||(canvas.height/(numCols-oldZ)*(numCols*3)===canvas.width))
+                z=oldZ;
         }
 
         drawStuff(x, y, z);
     });
 
     $("canvas").on('mousedown', function(event) {
+
         var lastX = event.clientX;
         var lastY = event.clientY; 
-        
+
         $(window).on('mousemove', function(e) {
             var newX = e.clientX;
-            var newY = e.clientY;
+            var newY = e.clientY;            
 
             if(lastX > newX) {
-                x -= Math.abs(lastX - newX); 
+                x -= Math.abs(lastX - newX);
+
+                if(x+(canvas.height/(numCols-z)*(numCols*2))<=canvas.width) {
+                    x += Math.abs(lastX - newX);
+                }
+
+
             } else {
                 x += Math.abs(lastX - newX);
+
+                if(x-(canvas.height/(numCols-z)*(numCols))>=0) {
+                    x -= Math.abs(lastX - newX);
+                }
             }
+
             if(newY > lastY) {
                 y += Math.abs(lastY - newY);
+
+                if(y-(canvas.height/(numCols-z)*(numCols))>=0) {
+                    y -= Math.abs(lastY - newY);
+                }
+
             } else {
-                y -= Math.abs(lastY - newY); 
+                y -= Math.abs(lastY - newY);
+
+                if(y+(canvas.height/(numCols-z)*(numCols*2))<=canvas.height) {
+                    y += Math.abs(lastY - newY);
+                } 
             }
-
-
             lastX = newX;
-            lastY = newY;
-
+            lastY = newY; 
             drawStuff(x, y, z);
-
+            
         });
     })
 
@@ -196,17 +215,31 @@ $(document).ready(function() {
     		var color = cell.color;
             var text = cell.data;
 
-    		
-            if((x>(0-w))&&(x<(canvas.width+w))&&(y>(0-h))&&(y<(canvas.height+h))) {
-                ctx.fillStyle = color;
-                ctx.fillRect (x, y, w, h);
+		
+            ctx.fillStyle = color;
+            ctx.fillRect (x, y, w, h);
+            
+            ctx.fillRect (x+(w*numCols), y, w, h);
+            ctx.fillRect (x-(w*numCols), y, w, h);
+            ctx.fillRect (x, y+(w*numCols), w, h);
+            ctx.fillRect (x, y-(w*numCols), w, h);
+            ctx.fillRect (x+(w*numCols), y+(w*numCols), w, h);
+            ctx.fillRect (x-(w*numCols), y-(w*numCols), w, h);
+            ctx.fillRect (x+(w*numCols), y-(w*numCols), w, h);
+            ctx.fillRect (x-(w*numCols), y+(w*numCols), w, h);
 
-                ctx.fillStyle="#fff";
-                ctx.font="15px Georgia";
-                ctx.fillText(text, x+(w/5), y+(h/5));
-            } else {
-                offScreen.push(text);
-            }
+            ctx.fillStyle="#fff";
+            ctx.font="15px Arial"; 
+            ctx.fillText(text, x+(w/5), y+(h/5));
+
+            ctx.fillText(text, (x+(w*numCols))+(w/5), y+(h/5));
+            ctx.fillText(text, (x-(w*numCols))+(w/5), y+(h/5));
+            ctx.fillText(text, x+(w/5), (y+(w*numCols))+(h/5));
+            ctx.fillText(text, x+(w/5), (y-(w*numCols))+(h/5));
+            ctx.fillText(text, (x+(w*numCols))+(w/5), (y+(w*numCols))+(h/5));
+            ctx.fillText(text, (x-(w*numCols))+(w/5), (y-(w*numCols))+(h/5));
+            ctx.fillText(text, (x+(w*numCols))+(w/5), (y-(w*numCols))+(h/5));
+            ctx.fillText(text, (x-(w*numCols))+(w/5), (y+(w*numCols))+(h/5));
 
             x += w;	
 			r += 3;
@@ -219,7 +252,7 @@ $(document).ready(function() {
 
     function reDrawCanvas() {
         canvas.width = $(window).width();
-        canvas.height = $(window).height()-300;
+        canvas.height = $(window).height();
         drawStuff(x, y, z); 
     }
 
